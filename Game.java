@@ -1,4 +1,8 @@
+import java.util.ArrayList;
 import java.util.Random;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * Runs the Mancala game.
@@ -13,6 +17,8 @@ public class Game {
 
 	private Player currentPlayer;
 	private Pit [] pitList;
+	
+	private ArrayList<ChangeListener> observers;
 	
 	//undo memory
 	private boolean canUndo;
@@ -43,6 +49,8 @@ public class Game {
 		else{
 			currentPlayer = Player.B;
 		}
+		
+		observers = new ArrayList<ChangeListener>();
 		canUndo = false;
 		prevPlayer = null;
 		prevPitList = null;
@@ -115,7 +123,8 @@ public class Game {
 				currentPlayer = Player.B;
 			else
 				currentPlayer = Player.A;
-		}		
+		}
+		notifyListeners();
 	}
 	
 	/**
@@ -127,6 +136,7 @@ public class Game {
 			pitList = prevPitList;
 			canUndo = false;
 		}
+		notifyListeners();
 	}
 	
 	/**
@@ -158,6 +168,19 @@ public class Game {
 	 */
 	public Player getCurrentPlayer(){
 		return currentPlayer;
+	}
+	
+	/**
+	 * adds a change listener
+	 * @param l
+	 */
+	public void addListener(ChangeListener l){
+		observers.add(l);
+	}
+	
+	private void notifyListeners(){
+		for(ChangeListener l : observers)
+			l.stateChanged(new ChangeEvent(this));
 	}
 	
 	public enum Player {
