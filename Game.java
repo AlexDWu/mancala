@@ -24,6 +24,7 @@ public class Game {
 	private boolean canUndo;
 	private Player prevPlayer;
 	private Pit[] prevPitList;
+	private boolean isGameOver;
 	
 	public static int NUM_PITS = 14;	
 	public static int NUM_PITS_PER_SIDE = 6;
@@ -49,6 +50,7 @@ public class Game {
 		else{
 			currentPlayer = Player.B;
 		}
+		isGameOver = false;
 		
 		observers = new ArrayList<ChangeListener>();
 		canUndo = false;
@@ -80,6 +82,9 @@ public class Game {
 			if(pitNum <= NUM_PITS_PER_SIDE || pitNum > 2 * NUM_PITS_PER_SIDE)
 				throw new IllegalArgumentException("Can't make this move");
 		}
+		
+		if(isGameOver)
+			return;
 		// save state
 		prevPitList= new Pit[NUM_PITS];
 		for(int i = 0; i < NUM_PITS; i++){
@@ -116,6 +121,22 @@ public class Game {
 			pitList[currentGoal].add(pitList[oppositePit].remove());
 		}
 		
+		//End game condition
+		int start = 0;
+		int end = NUM_PITS_PER_SIDE;
+		if(currentPlayer == Player.B){
+			start += 7;
+			end += 7;
+		}
+		int i = start;
+		while(pitList[i].getValue() == 0 && i < end)
+			++i;
+		if(i == end){ // player's pits are empty;
+			for(i = 0; i < NUM_PITS_PER_SIDE; ++i){
+				pitList[oppositeGoal].add(pitList[oppositeGoal - i - 1].remove());
+			}
+			isGameOver = true;
+		}
 		prevPlayer = currentPlayer;
 		//change player condition
 		if(pitNum != currentGoal){
@@ -144,13 +165,7 @@ public class Game {
 	 * @return true if the game is over, false if it is not
 	 */
 	public boolean gameOver(){
-		for(int i = 0; i < NUM_PITS_PER_SIDE; ++i){
-			if(pitList[i].getValue() > 0)
-				return false;
-			if(pitList[i + NUM_PITS_PER_SIDE + 1].getValue() > 0)
-				return false;
-		}
-		return true;
+		return isGameOver;
 	}
 	
 	/**
@@ -236,7 +251,6 @@ public class Game {
 			try {
 				cloned = (Pit) super.clone();
 			} catch (CloneNotSupportedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return cloned;
@@ -265,5 +279,35 @@ public class Game {
 			cloned = (GoalPit) super.clone();
 			return cloned;
 		}
+	}
+
+	/**
+	 * A string that indicates game status;
+	 * @return
+	 */
+	public String getStatus() {
+		if(isGameOver){
+			String out = "Game Over: ";
+			if(pitList[13].getValue() > pitList[6].getValue())
+				out += "Player B wins";
+			else if(pitList[6].getValue() > pitList[13].getValue())
+				out += "Playre A wins";
+			else
+				out += "Tie game";
+			return out;
+		}
+		if(currentPlayer == Player.A)
+			return "Player A's turn";
+		if(currentPlayer == Player.B)
+			return "Player B's turn";
+		return "";
+	}
+	
+	/**
+	 * Returns whether or not the game can undo
+	 * @return true if the game can undo, false if it can't
+	 */
+	public boolean canUndo(){
+		return canUndo;
 	}
 }
