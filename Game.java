@@ -17,6 +17,7 @@ public class Game {
 
 	private Player currentPlayer;
 	private Pit [] pitList;
+	private boolean isGameOver;
 	
 	private ArrayList<ChangeListener> observers;
 	
@@ -24,7 +25,7 @@ public class Game {
 	private boolean canUndo;
 	private Player prevPlayer;
 	private Pit[] prevPitList;
-	private boolean isGameOver;
+	private boolean prevGameOver;
 	
 	public static int NUM_PITS = 14;	
 	public static int NUM_PITS_PER_SIDE = 6;
@@ -135,6 +136,7 @@ public class Game {
 			for(i = 0; i < NUM_PITS_PER_SIDE; ++i){
 				pitList[oppositeGoal].add(pitList[oppositeGoal - i - 1].remove());
 			}
+			prevGameOver = isGameOver;
 			isGameOver = true;
 		}
 		prevPlayer = currentPlayer;
@@ -156,6 +158,7 @@ public class Game {
 			currentPlayer = prevPlayer;
 			pitList = prevPitList;
 			canUndo = false;
+			isGameOver = prevGameOver;
 		}
 		notifyListeners();
 	}
@@ -291,7 +294,7 @@ public class Game {
 			if(pitList[13].getValue() > pitList[6].getValue())
 				out += "Player B wins";
 			else if(pitList[6].getValue() > pitList[13].getValue())
-				out += "Playre A wins";
+				out += "Player A wins";
 			else
 				out += "Tie game";
 			return out;
